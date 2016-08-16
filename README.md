@@ -8,5 +8,5 @@ Installation Guide: http://www.eclipse.org/mosquitto/download/
 ###Step 3. Enjoy Coding~~~
 
 
-><h5 align="right">Stay hungry. Stay foolish. @Steve Jobs</h5>
+><h5 align="center">Stay hungry. Stay foolish. @Steve Jobs</h5>
 
