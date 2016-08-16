@@ -1,0 +1,166 @@
+<html>
+<meta charset="utf-8">
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.indigo-pink.min.css">
+    <script defer src="https://code.getmdl.io/1.1.3/material.min.js"></script>
+    
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Roboto:300,400,500,700" type="text/css">
+    <script src="mqttws31-min.js"></script>
+    <script src="jquery.min.js"></script>
+    <script>
+    var TOPIC = "/";
+    var client = false;
+
+    // 用戶端成功連接 broker 時...
+    function onConnect() {
+        // 確認連接後，才能訂閱主題
+        console.log("onConnect then subscribe topic");
+        document.getElementById("mqtt_monitor").innerHTML+="<p>onConnect then subscribe topic</p>";
+        $(document).ready(function(){
+            //$("div").show(500);
+            $("#mqtt_sub").click(function(){
+                TOPIC=document.getElementById("mqtt_topic").value+'/';
+                client.subscribe(TOPIC+"#");
+                console.log("subscribe to topic:"+TOPIC);
+                $("#mqtt_monitor").empty();
+                //document.getElementById("mqtt_monitor").innerHTML+="<p>subscribe to topic:"+TOPIC+"</p>";
+                $("#mqtt_text").attr("disabled",false);
+                $("#mqtt_pub").attr("disabled",false);
+            });
+        });
+
+        document.querySelector("#IP_account").close();
+    }
+
+
+    // 收到訊息時...
+    function onMessageArrived(message) {
+        console.log("onMessageArrived:"+message.payloadString);
+        //document.getElementById("mqtt_monitor").innerHTML += "<p>"+message.payloadString+"</p>";
+        var d = new Date;
+        document.querySelector("tbody").innerHTML+="<td class=\"mdl-data-table__cell--non-numeric\">"+TOPIC+"</td>"+"<td class=\"mdl-data-table__cell--non-numeric\">"+message.payloadString+"</td>"+"<td class=\"mdl-data-table__cell--non-numeric\">"+d.toString().slice(0,25)+"</td></tr>";
+        
+        
+    }
+
+    // 發佈訊息
+    function publish_message() {
+        var input_text = document.getElementById("mqtt_text");
+        var payload = input_text.value;
+        var message = new Paho.MQTT.Message(payload);
+        message.destinationName = TOPIC + "text";
+        client.send(message);
+        input_text.value = '';
+
+    }
+
+    function connect_server(host,port){
+        document.getElementById('IP_progress_bar').style.visibility = "visible";
+        console.log("Connecting MQTT Broker...");
+        document.getElementById("mqtt_monitor").innerHTML+="<p>Connecting MQTT Broker...</p>";
+        // 建立 MQTT 用戶端實體. 你必須正確寫上你設置的埠號.
+        // ClientId 可以自行指定，提供 MQTT broker 認證用
+        client = new Paho.MQTT.Client('ws://'+host+':'+port+'/', "myClientId");
+
+        // 指定收到訊息時的處理動作
+        client.onMessageArrived = onMessageArrived;
+
+        // 連接 MQTT broker
+        client.connect({onSuccess:onConnect});
+    }
+
+    function init() {
+        document.querySelector("#IP_account").showModal();
+        document.getElementById("mqtt_pub").addEventListener('click', publish_message);
+    }
+
+    function add_date() {
+        
+    }
+    window.addEventListener('load', init, false);
+    </script>
+</head>
+<style type="text/css">
+    .mdl-dialog.dialogwidth{
+        width: 50%;
+    }
+    .mdl-progress.width{
+        width: 100%;
+    }
+    .mdl-data-table.width{
+        width: 95%;
+    }
+    body{
+        padding: 20px;
+    }
+</style>
+<body>
+    <title>MQTT Web Test</title>
+    <dialog class="mdl-dialog dialogwidth" id='IP_account'>
+        <div id="IP_progress_bar" class="mdl-progress width mdl-js-progress mdl-progress__indeterminate" style="visibility: hidden"></div>
+        <h1 class="mdl-dialog__title">Input your IP address & port number...</h1>
+        <div class="mdl-dialog__content">
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <input class="mdl-textfield__input" type="text" list="IP_list"id="mqtt_IP" size="12"/>
+                <label class="mdl-textfield__label" for="mqtt_IP">IP Address</label>
+                <datalist id="IP_list">
+                    <option>140.115.70.160</option>
+                </datalist>
+            </div>
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <input class="mdl-textfield__input" type="text" list="port_list"id="mqtt_port" maxlength="5" size="5"/>
+                <datalist id="port_list">
+                    <option>11883</option>
+                </datalist>
+                <label class="mdl-textfield__label" for="mqtt_port">Port</label>
+            </div>
+        </div>
+        <div class="mdl-dialog__actions">
+        <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored" id="send_IP" onclick=connect_server(document.getElementById("mqtt_IP").value,document.getElementById("mqtt_port").value)>Connect</button>
+        </div>
+  </dialog>
+
+    <h1>MQTT-Web Test</h1>
+
+    <div id="MQTT_Topic">
+        <p>Input your Topic name...</p>
+        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+        <input class="mdl-textfield__input" type="text" id="mqtt_topic"/>
+        <label class="mdl-textfield__label" for="mqtt_topic">Topic name</label>
+        </div>
+        <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored" id="mqtt_sub">Subscribe</button>
+    </div>
+
+
+    <div id="MQTT_Publisher">
+        <p>mqtt client test...</p>
+        <input type="text" id="mqtt_text" disabled/>
+        <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored" id="mqtt_pub" disabled>Publish</button>
+    </div>
+    <p></p>
+    <table class="mdl-data-table width mdl-js-data-table">
+        <thead>
+            <tr>
+                <th class="mdl-data-table__cell--non-numeric">Data Source</th>
+                <th class="mdl-data-table__cell--non-numeric">Value</th>
+                <th class="mdl-data-table__cell--non-numeric">Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+        </tbody>
+</table>
+
+    <form hidden>
+        <fieldset>
+            <legend>MQTT Monitor:</legend>
+            <div id="mqtt_monitor">
+                <p>Waiting for MQTT Broker...<br></p>
+            </div>
+            
+        </fieldset>
+    </form>
+
+</body>
+</html>
