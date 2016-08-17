@@ -10,6 +10,8 @@
     <script src="jquery.min.js"></script>
     <script>
     var TOPIC = "/";
+    var TOPICname="";
+    var preTOPIC=TOPICname;
     var client = false;
 
     // 用戶端成功連接 broker 時...
@@ -21,6 +23,7 @@
             //$("div").show(500);
             $("#mqtt_sub").click(function(){
                 TOPIC=document.getElementById("mqtt_topic").value+'/';
+                TOPICname=document.getElementById("mqtt_topic").value;
                 client.subscribe(TOPIC+"#");
                 console.log("subscribe to topic:"+TOPIC);
                 $("#mqtt_monitor").empty();
@@ -39,8 +42,17 @@
         console.log("onMessageArrived:"+message.payloadString);
         //document.getElementById("mqtt_monitor").innerHTML += "<p>"+message.payloadString+"</p>";
         var d = new Date;
-        document.querySelector("tbody").innerHTML+="<td class=\"mdl-data-table__cell--non-numeric\">"+TOPIC+"</td>"+"<td class=\"mdl-data-table__cell--non-numeric\">"+message.payloadString+"</td>"+"<td class=\"mdl-data-table__cell--non-numeric\">"+d.toString().slice(0,25)+"</td></tr>";
-        
+        if(preTOPIC!=TOPICname){
+            document.querySelector("tbody").innerHTML+="<td id=topic"+TOPICname+" class=\"mdl-data-table__cell--non-numeric\">"+TOPICname+"</td>"+"<td id=value"+TOPICname+" class=\"mdl-data-table__cell--non-numeric\">"+message.payloadString+"</td>"+"<td id=date"+TOPICname+" class=\"mdl-data-table__cell--non-numeric\">"+d.toString().slice(0,25)+"</td></tr>";
+            console.log("pretopic:"+preTOPIC);
+            preTOPIC=TOPICname;
+            console.log("pretopic:"+preTOPIC);
+        }
+        else{
+            document.querySelector("#topic"+TOPICname).innerHTML=TOPICname;
+            document.querySelector("#value"+TOPICname).innerHTML=message.payloadString;
+            document.querySelector("#date"+TOPICname).innerHTML=d.toString().slice(0,25)
+        }
         
     }
 
