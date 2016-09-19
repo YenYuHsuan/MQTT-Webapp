@@ -21,6 +21,7 @@
         document.getElementById("mqtt_monitor").innerHTML+="<p>onConnect then subscribe topic</p>";
         $(document).ready(function(){
             //$("div").show(500);
+
             $("#mqtt_sub").click(function(){
                 TOPIC=document.getElementById("mqtt_topic").value+'/';
                 TOPICname=document.getElementById("mqtt_topic").value;
@@ -39,9 +40,16 @@
 
     // 收到訊息時...
     function onMessageArrived(message) {
-        console.log("onMessageArrived:"+message.payloadString);
+        console.log(TOPICname+" onMessageArrived:"+message.payloadString);
         //document.getElementById("mqtt_monitor").innerHTML += "<p>"+message.payloadString+"</p>";
         var d = new Date;
+        
+
+        if (TOPICname=="Volts") {
+            console.log("battery_status_iframe="+message.payloadString);
+        }
+
+
         if(preTOPIC!=TOPICname){
             document.querySelector("tbody").innerHTML+="<td id=topic"+TOPICname+" class=\"mdl-data-table__cell--non-numeric\">"+TOPICname+"</td>"+"<td id=value"+TOPICname+" class=\"mdl-data-table__cell--non-numeric\">"+message.payloadString+"</td>"+"<td id=date"+TOPICname+" class=\"mdl-data-table__cell--non-numeric\">"+d.toString().slice(0,25)+"</td></tr>";
             console.log("pretopic:"+preTOPIC);
@@ -64,7 +72,6 @@
         message.destinationName = TOPIC + "text";
         client.send(message);
         input_text.value = '';
-
     }
 
     function connect_server(host,port){
@@ -81,15 +88,11 @@
         // 連接 MQTT broker
         client.connect({onSuccess:onConnect});
     }
-
     function init() {
         document.querySelector("#IP_account").showModal();
         document.getElementById("mqtt_pub").addEventListener('click', publish_message);
     }
 
-    function add_date() {
-        
-    }
     window.addEventListener('load', init, false);
     </script>
 </head>
@@ -101,7 +104,15 @@
         width: 100%;
     }
     .mdl-data-table.width{
-        width: 95%;
+        width: 60%;
+    }
+    #battery_status_iframe {
+        position: fixed;
+        top: 20px;
+        right: 5%; 
+        width :100%;
+        height:100%;     
+        
     }
     body{
         padding: 20px;
@@ -131,9 +142,12 @@
         <div class="mdl-dialog__actions">
         <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored" id="send_IP" onclick=connect_server(document.getElementById("mqtt_IP").value,document.getElementById("mqtt_port").value)>Connect</button>
         </div>
-  </dialog>
+    </dialog>
 
     <h1>MQTT-Web Test</h1>
+
+    <!-- Battery Status -->
+    <iframe id="battery_status_iframe" src="./material-design-lite-battery-status/index.html" ></iframe>
 
     <div id="MQTT_Topic">
         <p>Input your Topic name...</p>

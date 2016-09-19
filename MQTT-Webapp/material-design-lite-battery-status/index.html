@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="UTF-8">
+    <title>Material Design Lite - Battery Status</title>
+
+        <link rel="stylesheet" href="css/style.css">
+    <script src="../mqttws31-min.js"></script>
+    <script src="../jquery.min.js"></script>
+    <script type="text/javascript">
+      var iTOPICname="Volts";
+      var iTOPIC = iTOPICname+"/";
+      
+      var preiTOPIC=iTOPICname;
+      var client = false;
+
+      // 用戶端成功連接 broker 時...
+      function onConnect() {
+          // 確認連接後，才能訂閱主題
+          console.log("onConnect then subscribe iTOPIC");
+          $(document).ready(function(){
+              //$("div").show(500);
+              client.subscribe(iTOPIC+"#");
+              console.log("subscribe to iTOPIC:"+iTOPICname);
+              
+          });
+      }
+
+
+      // 收到訊息時...
+      function onMessageArrived(message) {
+          console.log(iTOPICname+" onMessageArrived:"+message.payloadString);
+          //document.getElementById("slider").value=parseInt(message.payloadString);
+          changeValue(parseInt(message.payloadString));
+          //document.getElementById("mqtt_monitor").innerHTML += "<p>"+message.payloadString+"</p>";
+          var d = new Date;
+
+          if (iTOPICname=="Volts") {
+              console.log("battery_status_iframe="+message.payloadString);
+          }          
+      }
+
+      // 發佈訊息
+      // function publish_message() {
+      //     var input_text = document.getElementById("mqtt_text");
+      //     var payload = input_text.value;
+      //     var message = new Paho.MQTT.Message(payload);
+      //     message.destinationName = iTOPIC + "text";
+      //     client.send(message);
+      //     input_text.value = '';
+      // }
+
+      function connect_server(host,port){          
+          console.log("Connecting MQTT Broker...");
+          // 建立 MQTT 用戶端實體. 你必須正確寫上你設置的埠號.
+          // ClientId 可以自行指定，提供 MQTT broker 認證用
+          client = new Paho.MQTT.Client('ws://'+host+':'+port+'/', "myClientId1");
+
+          // 指定收到訊息時的處理動作
+          client.onMessageArrived = onMessageArrived;
+
+          // 連接 MQTT broker
+          client.connect({onSuccess:onConnect});
+      }
+      function init() {
+          connect_server("140.115.70.160","11883");
+      }
+
+      window.addEventListener('load', init, false);
+
+    </script>
+    
+    
+    
+  </head>
+
+  <body>
+
+    <html>
+  <head>
+    <!-- Material Design Lite -->
+   <script src="https://code.getmdl.io/1.2.0/material.min.js"></script>
+    <link rel="stylesheet" href="https://code.getmdl.io/1.2.0/material.indigo-pink.min.css">
+    <!-- Material Design icon font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <!-- Material Design Lite Palette:https://www.materialpalette.com/-->
+  </head>
+  <body>
+   <div >
+</div>
+    
+    <!-- Wide card with share menu button -->
+    
+    <div id="battery_status" class="demo-card-wide mdl-card mdl-shadow--4dp">
+      <div class="mdl-card__title">
+       <button class="mdl-button mdl-js-button mdl-js-ripple-effect">
+ <strong>Battery Status</strong>
+</button>
+      </div>
+      <div class="mdl-card__supporting-text ">
+      <div align="center">
+        <canvas width="142" height="250" id="myCanvas"  style="border: 2px dashed grey;">
+          Your browser does not support the HTML5 canvas tag.</canvas></div>
+      </div>
+      <!-- <div class="mdl-card__actions mdl-card--border">
+        <input id="slider" class="mdl-slider mdl-js-slider" type="range" type="range" min="0" max="100"  step="1" onchange="changeValue(this.value)" />
+      </div> -->
+      <div class="mdl-card__menu">
+        <div id ="BS" class="material-icons  mdl-badge mdl-badge--overlap"><button class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored">
+  <i class="material-icons">battery_full</i>
+</button></div>
+      </div>
+    </div>
+    
+  </body>
+</html>
+    
+        <script src="js/index.js"></script>
+
+    
+    
+    
+  </body>
+</html>
